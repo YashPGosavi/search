@@ -1,8 +1,10 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 def scrape_flipkart(product_name):
     products = []
@@ -23,8 +25,13 @@ def scrape_flipkart(product_name):
     return products
 
 
-@app.route('/search/<product_name>')
-def search_products(product_name):
+@app.route('/search', methods=['POST'])
+def search_products():
+    data = request.get_json()
+    product_name = data.get('product_name')
+    if not product_name:
+        return jsonify({"error": "Product name is required"}), 400
+    
     products = scrape_flipkart(product_name)
     return jsonify({"products": products})
 
