@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import logging
+import os  # Import the os module to access environment variables
 
 app = Flask(__name__)
 CORS(app)
@@ -11,11 +12,15 @@ CORS(app)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Define Flipkart URL and user agent using environment variables
+FLIPKART_URL = os.environ.get('FLIPKART_URL', 'https://www.flipkart.com')
+USER_AGENT = os.environ.get('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
+
 def scrape_flipkart(product_name):
     products = []
-    flipkart_url = f"https://www.flipkart.com/search?q={product_name}"
+    flipkart_url = f"{FLIPKART_URL}/search?q={product_name}"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        'User-Agent': USER_AGENT
     }
     response = requests.get(flipkart_url, headers=headers)
     logger.debug("Response status code: %s", response.status_code)  # Log response status code
@@ -27,7 +32,7 @@ def scrape_flipkart(product_name):
             if title_element:
                 title = title_element.text.strip()
                 image_url = card.find("img")['src']
-                product_link = "https://www.flipkart.com" + card.find("a")['href']
+                product_link = f"{FLIPKART_URL}" + card.find("a")['href']
                 products.append({"title": title, "image_url": image_url, "product_link": product_link})
     else:
         logger.error("Failed to fetch data from Flipkart. Status code: %s", response.status_code)
