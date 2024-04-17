@@ -3,7 +3,7 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import logging
-import os  # Import the os module to access environment variables
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Define Flipkart URL and user agent using environment variables
 FLIPKART_URL = os.environ.get('FLIPKART_URL', 'https://www.flipkart.com')
 USER_AGENT = os.environ.get('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
-PORT = int(os.environ.get('PORT', 10000))  # Get the PORT environment variable or use default value 10000
+PORT = int(os.environ.get('PORT', 80))  # Set default port to 80 for deployment
 
 def scrape_flipkart(product_name):
     products = []
@@ -24,7 +24,7 @@ def scrape_flipkart(product_name):
         'User-Agent': USER_AGENT
     }
     response = requests.get(flipkart_url, headers=headers)
-    logger.debug("Response status code: %s", response.status_code)  # Log response status code
+    logger.debug("Response status code: %s", response.status_code)
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
         product_cards = soup.find_all("div", class_="_1AtVbE")
@@ -46,15 +46,9 @@ def index():
 @app.route('/search', methods=['POST'])
 def search_products():
     data = request.json
-    logger.debug("Received request data: %s", data)  # Log request data
-    product_name = data.get('product_name')
-    
-    if not product_name:
-        return jsonify({"error": "Product name not provided"}), 400
-
-    products = scrape_flipkart(product_name)
-    logger.debug("Scraped products: %s", products)  # Log scraped products
-    return jsonify({"products": products})
+    product_name = data.get('product_name')  # Extract product name from request data
+    scraped_products = scrape_flipkart(product_name)
+    return jsonify(scraped_products)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=PORT)  # Listen on all IP addresses
