@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import logging
+from retrying import retry
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +12,8 @@ CORS(app)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Decorator for retrying with exponential backoff
+@retry(stop_max_attempt_number=3, wait_exponential_multiplier=1000)
 def scrape_flipkart(product_name):
     products = []
     flipkart_url = f"https://www.flipkart.com/search?q={product_name}"
@@ -31,6 +34,7 @@ def scrape_flipkart(product_name):
                 products.append({"title": title, "image_url": image_url, "product_link": product_link})
     else:
         logger.error("Failed to fetch data from Flipkart. Status code: %s", response.status_code)
+        raise Exception("Failed to fetch data from Flipkart")  # Raise exception for retry
     return products
 
 @app.route('/')
@@ -46,9 +50,13 @@ def search_products():
     if not product_name:
         return jsonify({"error": "Product name not provided"}), 400
 
-    products = scrape_flipkart(product_name)
-    logger.debug("Scraped products: %s", products)  # Log scraped products
-    return jsonify({"products": products})
+    try:
+        products = scrape_flipkart(product_name)
+        logger.debug("Scraped products: %s", products)  # Log scraped products
+        return jsonify({"products": products})
+    except Exception as e:
+        logger.error("Error occurred while scraping Flipkart: %s", str(e))
+        return jsonify({"error": "Failed to fetch data from Flipkart"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)
