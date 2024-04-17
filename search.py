@@ -24,15 +24,10 @@ def scrape_flipkart(product_name):
             products.append({"title": title, "image_url": image_url, "product_link": product_link})
     return products
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search', methods=['POST'])
 def search_products():
-    if request.method == 'GET':
-        product_name = request.args.get('product_name')
-    elif request.method == 'POST':
-        data = request.json
-        product_name = data.get('product_name')
-    else:
-        return jsonify({"error": "Method not allowed"}), 405
+    data = request.json
+    product_name = data.get('product_name')
     
     if not product_name:
         return jsonify({"error": "Product name not provided"}), 400
