@@ -32,6 +32,10 @@ def scrape_flipkart(product_name):
         print("An error occurred:", e)
     return products
 
+@app.route('/')
+def index():
+    return 'Go and search'
+
 @app.route('/search', methods=['POST'])
 def search_products():
     data = request.get_json()
