@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Define Flipkart URL and user agent using environment variables
 FLIPKART_URL = os.environ.get('FLIPKART_URL', 'https://www.flipkart.com')
 USER_AGENT = os.environ.get('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
+PORT = int(os.environ.get('PORT', 10000))  # Get the PORT environment variable or use default value 10000
 
 def scrape_flipkart(product_name):
     products = []
@@ -56,4 +57,4 @@ def search_products():
     return jsonify({"products": products})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000, debug=False)
+    app.run(host='0.0.0.0', port=PORT, debug=False)
