@@ -24,6 +24,10 @@ def scrape_flipkart(product_name):
             products.append({"title": title, "image_url": image_url, "product_link": product_link})
     return products
 
+@app.route('/')
+def index():
+    return 'Welcome to the search web scraper service!'
+
 @app.route('/search', methods=['POST'])
 def search_products():
     data = request.json
